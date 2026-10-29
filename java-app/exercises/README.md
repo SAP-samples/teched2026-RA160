@@ -51,7 +51,7 @@ Follow the exercises in order. Each exercise builds on the previous one.
 
 ### Finding the code
 
-The Java code you need fore these exercises is located at `java-app\agent\src\main\java\com\sap\teched\demo`.
+The Java code you need fore these exercises is located at `java-app/agent/src/main/java/com/sap/teched/demo`.
 You will need to work with the two files `/agent/AgentService` (Exercises 1,2, and 4) and `tool/RptPredictionTool` (Exercise 3).
 
 ![Pop-up example](img/java-files.png)

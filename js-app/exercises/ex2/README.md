@@ -1,6 +1,6 @@
 # Exercise 2 - Equipping the Agent: Tool Calls and the Agentic Loop
 
-In this exercise, you will add tools to the agent so it can query real financial data, run SQL aggregations, and reason across multiple data sources.
+In this exercise, you will add tools to the agent so it can fetch financial workshop data, run SQL aggregations, and reason across multiple data sources.
 You'll learn how LangChain's `createAgent()` function, running on LangGraph's runtime, drives the back-and-forth between the LLM and your locally executed tools.
 
 Complete [Exercise 1](../ex1/README.md) before starting this exercise.
@@ -9,6 +9,14 @@ Complete [Exercise 1](../ex1/README.md) before starting this exercise.
 
 By the end of this exercise, your agent will be able to fetch financial planning and journal entry data from SAP OData services, load it into an in-memory SQL workspace, and answer questions that require SQL aggregation — all driven autonomously by the LLM through tool calls.
 You'll understand how LangGraph routes tool-call messages to your functions and why the agentic loop requires no manual orchestration code in your application.
+
+### Where does the financial data come from?
+
+The workshop uses a **local OData server embedded in the application**, backed by the sample dataset in [`mock-server/data/seed.sql`](../../../mock-server/data/seed.sql). It provides financial planning and journal entry endpoints modeled after SAP S/4HANA APIs; it is **not a connection to a real SAP S/4HANA system or SAP HANA database**.
+
+The client side uses the usual **SAP Cloud SDK generated OData clients**. These clients send actual HTTP requests to the local server, which processes OData filters and returns data that the tools load into the session's in-memory DuckDB workspace. The dataset and backend are simulated, but the OData requests and data retrieval are real — not hard-coded tool responses.
+
+You can inspect the financial planning service at [http://localhost:3142/sap/opu/odata/sap/API_FINPLANNINGENTRYITEM_SRV/](http://localhost:3142/sap/opu/odata/sap/API_FINPLANNINGENTRYITEM_SRV/) while the application is running.
 
 ## Background: How tool calling works
 
@@ -88,7 +96,13 @@ const tools = [
 ];
 ```
 
-Each tool in the array is passed to the `createAgent()` function, which registers its name, description, and schema with the model automatically.
+The array only registers tools if the `createAgent()` call receives **`tools,`**, as wired in
+Exercise 1. `systemPromptForTools(tools)` describes the tools; it does not register them.
+If the call still contains `tools: []` or omits any advertised tools, the startup wrapper
+stops with an `Agent configuration error` naming the missing tools. Pass the same `tools`
+array to both functions.
+
+LangChain registers each tool's name, description, and schema with the model automatically.
 When the model issues a tool-call message naming one of these tools, LangGraph routes it to the corresponding function in your application.
 
 ## Step 3: Verify the full `buildFinancialAgent()` function

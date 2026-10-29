@@ -20,7 +20,8 @@ pnpm workshop:setup
 
 Enter the passphrase provided by the instructor, on success the command writes the decrypted service key to the root `.env` file.
 
-If you are using your own SAP AI Core instance instead, you need the following:
+
+If you are using your own SAP AI Core instance and are not using the shared credentials as part of the workshop, you need the following:
 
 - An SAP AI Core service instance with Generative AI Hub access.
 - An orchestration deployment in that instance. Follow the [SAP AI Core documentation for creating an orchestration deployment](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/create-deployment-for-orchestration?locale=en-US).

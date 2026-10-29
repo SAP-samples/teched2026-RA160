@@ -5,6 +5,8 @@ With these tools, your agent can predict future financial values and evaluate it
 
 Complete [Exercise 2](../ex2/README.md) before starting this exercise.
 
+> **Data source:** Financial planning and journal entry data come from the workshop's local OData server, embedded in the application and backed by a sample dataset — not a real SAP S/4HANA system or SAP HANA database. The tools use standard SAP Cloud SDK generated OData clients to fetch that data over HTTP and load it into the session's DuckDB workspace. See [Exercise 2: Where does the financial data come from?](../ex2/README.md#where-does-the-financial-data-come-from) for details.
+
 ## What you'll learn
 
 By the end of this exercise, your agent will be able to run a complete forecast workflow:
@@ -125,7 +127,8 @@ A complete forecast workflow follows this sequence:
 
 Open [`agent/src/tools/rpt-tool.ts:294`](../../agent/src/tools/rpt-tool.ts#L294) and locate the `callRpt()` function.
 
-Unlike row-by-row JSON APIs, the TypeScript SDK uses a **Parquet-based API**: it serializes the SQL view into a binary Parquet blob and transmits it to SAP RPT in a single request:
+This implementation uses **Parquet**, a compact columnar format that fits well with the tabular data already held in the in-memory SQL workspace.
+It can directly serialize the SQL view into a binary Parquet blob and sends it to SAP RPT in a single request. Parquet is not required: the Cloud SDK for AI also supports sending table data directly as JSON.
 
 ```typescript
 const rptClient = new RptClient({ modelName: RPT_MODEL });
@@ -162,9 +165,9 @@ Key aspects of this implementation:
 - The `explanations: { top_column_scores: 5 }` property requests feature-importance scores, identifying which columns had the strongest influence on the forecast.
 - The `resilience({ timeout: 600_000 })` function allows up to 10 minutes for the prediction HTTP request and provides circuit-breaker handling.
 
-### Try changing the prediction configuration
+### Understand the prediction configuration
 
-Before continuing, inspect the `run_rpt_prediction` schema and the `prediction_config` in `callRpt()`. The tool does not hard-code a business column: the agent supplies `targetColumn` and `taskType` for each request. For this exercise, use `amountInCompanyCodeCurrency` as the target and `regression` because the target is a continuous monetary amount. Notice how the implementation passes that choice to RPT as the target column and prediction task.
+This step is for reading only; no code changes are needed. The agent supplies the target column and task type for each prediction request. The implementation passes these values to RPT through `prediction_config`, allowing the same tool to handle different prediction targets and tasks.
 
 ---
 
