@@ -27,7 +27,15 @@ If you have any trouble, the full tool implementations are available in [`agent/
 SAP RPT (Relational Pretrained Transformer) is a **table-native foundation model** built specifically for structured, relational enterprise data — such as cost centers, general ledger accounts, purchase orders, and invoices.
 
 Unlike a general-purpose LLM that operates on unstructured text, RPT accepts a **table of rows** with numeric and categorical columns and predicts the values for a designated target column.
+
+RPT uses **tabular in-context learning**: examples with known target values provide context for predicting missing targets, without training a separate model. It supports both regression and classification.
 The SAP Cloud SDK for AI provides the `RptClient` class in `@sap-ai-sdk/rpt`, allowing you to invoke RPT directly from TypeScript without any custom model training, hyperparameter tuning, or infrastructure deployment.
+
+#### Context and deep-context mode
+
+**In this workshop**, `run_rpt_prediction` uses `sap-rpt-1.6`, with limits of **2,048 context rows**, **100 columns**, and **512 prediction rows** per request. Sample historical context only, split larger prediction sets across requests, and keep future actuals out of the context. See SAP's [RPT inferencing best practices](https://help.sap.com/docs/sap-ai-core/generative-ai/example-payloads-for-inferencing-sap-rpt-1?locale=en-US#best-practices) for data-preparation guidance.
+
+The larger `sap-rpt-1.6-large` variant supports more context and an optional **deep-context mode**, at higher computational effort. The workshop tool does not expose this mode. See the [SAP RPT 1.6 documentation](https://help.sap.com/docs/sap-ai-core/generative-ai/sap-rpt-1-6?locale=en-US) for model limits and deep-context details, and the [SDK documentation](https://sap.github.io/ai-sdk/docs/js/tabular-ai/rpt#context-mode) for a configuration example.
 
 ### The Financial Goal: Predicting Future ACTUAL Values
 

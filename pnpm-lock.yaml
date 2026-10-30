@@ -227,7 +227,7 @@ importers:
         specifier: 'catalog:'
         version: 0.23.3
       node:
-        specifier: runtime:^24.21.0
+        specifier: runtime:^24.21.0 || ^26
         version: runtime:24.22.0
       tinyexec:
         specifier: 'catalog:'

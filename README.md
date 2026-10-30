@@ -95,7 +95,8 @@ pnpm --version
 
 Expect Node.js **24.x or 26.x** and pnpm **12.x** (an existing pnpm **11.x** installation also works).
 
-For Java exercises, check the JDK Maven uses: from `java-app/agent`, run `./mvnw.cmd --version` on Windows or `./mvnw --version` on macOS/Linux. The output should report Java **21**.
+> [!NOTE]
+> If you are using Java and encounter build failures later in the demo, check the JDK Maven uses. After cloning the repository, from `java-app/agent`, run `./mvnw.cmd --version` on Windows or `./mvnw --version` on macOS/Linux. The output should report Java **21**.
 
 ## Getting Started
 
@@ -112,8 +113,20 @@ Open the `teched2026-RA160` folder in Visual Studio Code via **File → Open Fol
 
 ![How to open a folder in VS Code](img/vsc.png)
 
-If you selected the Java track, set `JAVA_HOME` in this terminal as shown above before starting the exercises.
+If you selected the Java track, set `JAVA_HOME` in this VS Code terminal before starting the exercises:
 
+Windows (PowerShell):
+
+```powershell
+$javacPath = (Get-Command javac.exe).Source
+$env:JAVA_HOME = Split-Path (Split-Path $javacPath -Parent) -Parent
+```
+
+macOS:
+
+```sh
+export JAVA_HOME=$(/usr/libexec/java_home -F -v 21)
+```
 
 > Note: If at any point during the demo a pop-up like the following appears, simply click on `Allow`.
 ![Pop-up example](img/pop-up.png)
