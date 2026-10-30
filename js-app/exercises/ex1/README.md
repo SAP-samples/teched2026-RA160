@@ -73,7 +73,9 @@ const orchestrationClient = new OrchestrationClient([
     promptTemplating: {
       model: {
         name: 'anthropic--claude-4.6-sonnet',
-        params: { reasoning_effort: 'low' },
+        params: {
+          reasoning_effort: 'low',
+        },
       },
     },
   },
@@ -119,7 +121,9 @@ function buildFinancialAgent() {
       promptTemplating: {
         model: {
           name: 'anthropic--claude-4.6-sonnet',
-          params: { reasoning_effort: 'low' },
+          params: {
+            reasoning_effort: 'low',
+          },
         },
       },
     },
@@ -190,7 +194,13 @@ Try `gemini-3.8-flash`:
 
 ```typescript
 const orchestrationClient = new OrchestrationClient([
-  { promptTemplating: { model: { name: 'gemini-3.8-flash' } } },
+  {
+    promptTemplating: {
+      model: {
+        name: 'gemini-3.8-flash',
+      },
+    },
+  },
 ]);
 ```
 

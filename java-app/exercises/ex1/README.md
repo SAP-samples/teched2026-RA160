@@ -12,7 +12,7 @@ In order to do this, we will perform the following steps:
 - Assemble a conversation — a system instruction and the user's question — and send it to the LLM.
 
 If you have any trouble solving the exercise, you can find the code to solve it in comments inside the `callChatClient` method in `AgentService.java`.
-Also, feel free to ask the presenters in your session for help at any time. 
+Also, feel free to ask the presenters in your session for help at any time.
 
 
 ## Background: What is the Orchestration Service?
@@ -112,7 +112,7 @@ It also enables the addition of AI Core resilience features, which you will see 
 
 
 Note that in a productive application, we would most likely build this only once at start-up of the app.
-For demo purposes, we build a new `chatModel` and `options` object on every user input here.  
+For demo purposes, we build a new `chatModel` and `options` object on every user input here.
 
 
 ## Step 5: Build the `ChatClient`

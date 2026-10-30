@@ -52,11 +52,11 @@ Orchestration can apply content filtering to the LLM's input and output when you
 
 Open the following files and read the `tool(...)` definitions at the bottom of each:
 
-| File                                                     | Tool name                  | What it does                                                                                                                                  |
-| -------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`odata-tools.ts:104`](../../agent/src/tools/odata-tools.ts#L104) | `query_financial_planning` | Fetches financial planning entries from the OData API and **appends** them into a named session table. |
-| [`odata-tools.ts:174`](../../agent/src/tools/odata-tools.ts#L174) | `query_journal_entry` | Fetches journal entry items from the OData API and **appends** them into a named session table. |
-| [`sql-tool.ts:7`](../../agent/src/tools/sql-tool.ts#L7) | `run_sql` | Executes SQL against the session's in-memory workspace — `SELECT` for reporting, `CREATE OR REPLACE VIEW` to define virtual tables, and more. |
+| File                                                              | Tool name                  | What it does                                                                                                                                  |
+| ----------------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`odata-tools.ts:104`](../../agent/src/tools/odata-tools.ts#L104) | `query_financial_planning` | Fetches financial planning entries from the OData API and **appends** them into a named session table.                                        |
+| [`odata-tools.ts:174`](../../agent/src/tools/odata-tools.ts#L174) | `query_journal_entry`      | Fetches journal entry items from the OData API and **appends** them into a named session table.                                               |
+| [`sql-tool.ts:7`](../../agent/src/tools/sql-tool.ts#L7)           | `run_sql`                  | Executes SQL against the session's in-memory workspace — `SELECT` for reporting, `CREATE OR REPLACE VIEW` to define virtual tables, and more. |
 
 You will register these three data tools in this exercise.
 Exercise 3 adds RPT, TabPFN, and ground-truth tools after the SQL workflow is established.
@@ -66,7 +66,7 @@ Exercise 3 adds RPT, TabPFN, and ground-truth tools after the SQL workflow is es
 When the `query_financial_planning` tool queries financial planning data, entries are partitioned by the **`planningCategory`** property.
 In SAP financial planning, four distinct categories represent different perspectives on the same financial dimensions:
 
-- **`ACTUAL`**: Realized, historical financial amounts recorded from executed business transactions (what was *actually* spent or earned).
+- **`ACTUAL`**: Realized, historical financial amounts recorded from executed business transactions (what was _actually_ spent or earned).
 - **`PLAN`**: Operational planning figures established by business units as targets for future periods.
 - **`BUDGET`**: Approved financial limits / spending allocations authorized by management.
 - **`FORECAST`**: Rolling estimates updated periodically throughout the fiscal year reflecting recent trends.
@@ -87,6 +87,8 @@ The `description` string and the Zod `schema` together form the function definit
 
 Go back to the `buildFinancialAgent()` function in `agent.ts`.
 Replace the empty `tools` array with the three data tools:
+
+<!-- biome-ignore format: Keep one tool per line so exercise updates only add list entries. -->
 
 ```typescript
 const tools = [
@@ -109,6 +111,8 @@ When the model issues a tool-call message naming one of these tools, LangGraph r
 
 After Step 2, the relevant parts of the `buildFinancialAgent()` function should look like this:
 
+<!-- biome-ignore format: Keep one tool per line so exercise updates only add list entries. -->
+
 ```typescript
 function buildFinancialAgent() {
   const orchestrationClient = new OrchestrationClient([
@@ -116,7 +120,9 @@ function buildFinancialAgent() {
       promptTemplating: {
         model: {
           name: 'anthropic--claude-4.6-sonnet',
-          params: { reasoning_effort: 'low' },
+          params: {
+            reasoning_effort: 'low',
+          },
         },
       },
     },

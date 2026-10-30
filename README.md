@@ -8,7 +8,7 @@ This repository contains the material for the SAP TechEd 2026 session **RA160 �
 
 Experience SAP AI Core as the orchestration layer for enterprise AI. Our engineers help you extend Joule Agents with models from [SAP Cloud SDK for AI](https://sap.github.io/ai-sdk/), ground them in products for SAP Business Data Cloud, and embed them in the flows of SAP S/4HANA. Learn to govern, scale, and monitor AI agents from prototype to production.
 
-In this workshop, you will build a financial data agent that queries a mock S/4HANA OData backend, stores the results in a local scratch database, and uses RPT / TabPFN on SAP AI Core to forecast future periods — all wired together through the [orchestration service](https://help.sap.com/docs/ai-launchpad/sap-ai-launchpad/orchestration-4953dc10c6dd48fe85f37b41109dffe2?locale=en-US&q=orchestration). 
+In this workshop, you will build a financial data agent that queries a mock S/4HANA OData backend, stores the results in a local scratch database, and uses RPT / TabPFN on SAP AI Core to forecast future periods — all wired together through the [orchestration service](https://help.sap.com/docs/ai-launchpad/sap-ai-launchpad/orchestration-4953dc10c6dd48fe85f37b41109dffe2?locale=en-US&q=orchestration).
 Implementations are provided in both **TypeScript** (LangChain + SAP Cloud SDK for AI) and **Java** (Spring AI + SAP Cloud SDK for AI).
 
 > [!WARNING]
@@ -129,15 +129,15 @@ export JAVA_HOME=$(/usr/libexec/java_home -F -v 21)
 ```
 
 > Note: If at any point during the demo a pop-up like the following appears, simply click on `Allow`.
-![Pop-up example](img/pop-up.png)
+> ![Pop-up example](img/pop-up.png)
 
 ### Choose Your Workshop Track
 
 **Setup complete? Choose one track** and continue with its exercise guide. Both tracks build the same financial data agent.
 
-| JavaScript / TypeScript | Java |
-|---|---|
-| LangChain + SAP Cloud SDK for AI | Spring AI + SAP Cloud SDK for AI |
+| JavaScript / TypeScript                                            | Java                                                           |
+| ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| LangChain + SAP Cloud SDK for AI                                   | Spring AI + SAP Cloud SDK for AI                               |
 | **[Start the JavaScript exercises →](js-app/exercises/README.md)** | **[Start the Java exercises →](java-app/exercises/README.md)** |
 
 ### Prepare Workshop Credentials (Organizers)
@@ -153,13 +153,17 @@ Generate a strong random passphrase. The command validates `AICORE_SERVICE_KEY` 
 The command refuses to overwrite the payload. Use `pnpm workshop:encrypt --force` only when rotating the workshop credential, and revoke the service key immediately after the workshop.
 
 ## Contributing
+
 Please read the [CONTRIBUTING.md](./CONTRIBUTING.md) to understand the contribution guidelines.
 
 ## Code of Conduct
+
 Please read the [SAP Open Source Code of Conduct](https://github.com/SAP-samples/.github/blob/main/CODE_OF_CONDUCT.md).
 
 ## How to obtain support
+
 Support for the content in this repository is available during the actual time of the online session for which this content has been designed. Otherwise, you may request support via the [Issues](https://github.com/SAP-samples/teched2026-RA160/issues) tab.
 
 ## License
+
 Copyright 2026 SAP SE or an SAP affiliate company and teched2026-RA160 contributors. Please see our [LICENSE](LICENSES/Apache-2.0.txt) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/SAP-samples/teched2026-RA160).

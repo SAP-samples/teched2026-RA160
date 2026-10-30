@@ -41,20 +41,20 @@ The larger `sap-rpt-1.6-large` variant supports more context and an optional **d
 
 In enterprise financial management, organizations frequently set plans and budgets. However, what leadership and financial controllers ultimately care about is:
 
-> *"What will our **actual spend** really turn out to be when the upcoming fiscal year concludes?"*
+> _"What will our **actual spend** really turn out to be when the upcoming fiscal year concludes?"_
 
 To understand how the agent predicts this, let's look at the four values of **`planningCategory`** in SAP financial planning:
 
-| `planningCategory` | What it means | Role in Forecasting |
-| ------------------ | ------------- | ------------------- |
-| **`ACTUAL`** | Realized, historical financial figures recorded from finalized business transactions (what was *actually* spent or earned). | **Target to predict** for the future year (2026), and **context data** from past years (2022–2024). |
-| **`PLAN`** | Operational targets established by business units before the period begins. | **Feature signal** available for both past and future years. |
-| **`BUDGET`** | Formal spending limits approved by management that should not be exceeded. | **Feature signal** available for both past and future years. |
-| **`FORECAST`** | Rolling estimates updated periodically throughout the year reflecting current trends. | **Feature signal** available for both past and future years. |
+| `planningCategory` | What it means                                                                                                               | Role in Forecasting                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **`ACTUAL`**       | Realized, historical financial figures recorded from finalized business transactions (what was _actually_ spent or earned). | **Target to predict** for the future year (2026), and **context data** from past years (2022–2024). |
+| **`PLAN`**         | Operational targets established by business units before the period begins.                                                 | **Feature signal** available for both past and future years.                                        |
+| **`BUDGET`**       | Formal spending limits approved by management that should not be exceeded.                                                  | **Feature signal** available for both past and future years.                                        |
+| **`FORECAST`**     | Rolling estimates updated periodically throughout the year reflecting current trends.                                       | **Feature signal** available for both past and future years.                                        |
 
 The core goal in Exercise 3 is to **predict future `ACTUAL` values** (e.g. forecasting what cost center A1000 will actually spend across all 12 periods of fiscal year 2026).
 
-We already know the planned, budgeted, and forecasted amounts (`PLAN`, `BUDGET`, `FORECAST`) for 2026. What we *don't* know is what the actual spend (`ACTUAL`) will be.
+We already know the planned, budgeted, and forecasted amounts (`PLAN`, `BUDGET`, `FORECAST`) for 2026. What we _don't_ know is what the actual spend (`ACTUAL`) will be.
 The tabular models learn the relationship between planned/budgeted figures and real actuals from the 2022–2024 context rows, and use those learned patterns to predict the missing 2026 actuals.
 
 ### Key Concepts and Terminology
@@ -63,12 +63,12 @@ To help you navigate the exercise, here is a quick reference for the key terms u
 
 - **In-Context Tabular Learning:** Rather than updating model weights via traditional training, the model learns patterns on the fly directly from the rows in your request table.
 - **Context Rows vs. Prediction Rows:**
-  - *Context rows:* Historical rows where the target value (`ACTUAL` spend) is known.
-  - *Prediction rows:* Future rows where input features (`PLAN`, `BUDGET`, `FORECAST`) are known, but the target value is set to `null`. The model fills in these blanks.
+  - _Context rows:_ Historical rows where the target value (`ACTUAL` spend) is known.
+  - _Prediction rows:_ Future rows where input features (`PLAN`, `BUDGET`, `FORECAST`) are known, but the target value is set to `null`. The model fills in these blanks.
 - **Target Column vs. Feature Columns:**
-  - *Target column:* The specific column to predict (e.g., `amountInCompanyCodeCurrency` for `ACTUAL`).
-  - *Feature columns:* The attributes the model learns from (e.g., `costCenter`, `glAccount`, `ledger`, and amounts for `PLAN`, `BUDGET`, `FORECAST`).
-  - *Feature rows:* Rows that provide the input values the model can use to make a prediction. In this exercise, they contain attributes such as cost center, account, and the `PLAN`, `BUDGET`, and `FORECAST` amounts; feature rows may be historical context rows or future prediction rows.
+  - _Target column:_ The specific column to predict (e.g., `amountInCompanyCodeCurrency` for `ACTUAL`).
+  - _Feature columns:_ The attributes the model learns from (e.g., `costCenter`, `glAccount`, `ledger`, and amounts for `PLAN`, `BUDGET`, `FORECAST`).
+  - _Feature rows:_ Rows that provide the input values the model can use to make a prediction. In this exercise, they contain attributes such as cost center, account, and the `PLAN`, `BUDGET`, and `FORECAST` amounts; feature rows may be historical context rows or future prediction rows.
 - **Parquet Format:** A compact, high-performance binary columnar data format. The TypeScript SDK packages rows into a Parquet blob and transmits it to SAP RPT, avoiding the overhead of large JSON payloads. If you prefer to use JSON data in your own clients, the Cloud SDK for AI will transparently compress the payload with `gzip` before sending it to SAP RPT.
 - **Ground Truth:** Real, verified actual values from completed business operations. In real life, future ground truth is unknown until the year ends; in our mock environment, 2026 actuals exist so we can test how accurate our forecast was.
 - **MAPE (Mean Absolute Percentage Error):** A standard forecast evaluation metric measuring percentage error.
@@ -80,11 +80,11 @@ To help you navigate the exercise, here is a quick reference for the key terms u
 
 Open the following files and read the `tool(...)` definitions:
 
-| File | Tool name | What it does |
-| ---- | --------- | ------------ |
-| [`rpt-tool.ts:417`](../../agent/src/tools/rpt-tool.ts#L417) | `run_rpt_prediction` | Runs SAP RPT on a SQL table or view and writes predicted values into an output table. `predictionWhere` and `contextWhere` separate prediction rows from context rows. |
-| [`tabpfn-tool.ts:231`](../../agent/src/tools/tabpfn-tool.ts#L231) | `run_tabpfn_prediction` | Runs TabPFN on a SQL table or view and writes predictions into an output table. Especially well-suited for tabular data with categorical or mixed-type features. |
-| [`get-ground-truth-tool.ts:411`](../../agent/src/tools/get-ground-truth-tool.ts#L411) | `get_ground_truth` | Compares a completed prediction against real OData actuals. Computes per-row percentage deviations and summary metrics including MAPE. |
+| File                                                                                  | Tool name               | What it does                                                                                                                                                           |
+| ------------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpt-tool.ts:417`](../../agent/src/tools/rpt-tool.ts#L417)                           | `run_rpt_prediction`    | Runs SAP RPT on a SQL table or view and writes predicted values into an output table. `predictionWhere` and `contextWhere` separate prediction rows from context rows. |
+| [`tabpfn-tool.ts:231`](../../agent/src/tools/tabpfn-tool.ts#L231)                     | `run_tabpfn_prediction` | Runs TabPFN on a SQL table or view and writes predictions into an output table. Especially well-suited for tabular data with categorical or mixed-type features.       |
+| [`get-ground-truth-tool.ts:411`](../../agent/src/tools/get-ground-truth-tool.ts#L411) | `get_ground_truth`      | Compares a completed prediction against real OData actuals. Computes per-row percentage deviations and summary metrics including MAPE.                                 |
 
 ---
 
@@ -92,6 +92,8 @@ Open the following files and read the `tool(...)` definitions:
 
 Exercise 2 left the agent with the three data and SQL tools.
 Now append the forecasting and ground-truth tools to the existing `tools` array in the [`agent/src/agent.ts`](../../agent/src/agent.ts) file:
+
+<!-- biome-ignore format: Keep one tool per line so exercise updates only add list entries. -->
 
 ```typescript
 const tools = [
@@ -248,7 +250,7 @@ In-Memory SQL View
 6. Insert predictions into DuckDB output table (predicted_<targetColumn>)
 ```
 
-This explains why the `run_sql` tool is called *after* the `run_rpt_prediction` tool: the predicted values do not exist in the database until RPT has completed and written them into the output table.
+This explains why the `run_sql` tool is called _after_ the `run_rpt_prediction` tool: the predicted values do not exist in the database until RPT has completed and written them into the output table.
 
 ---
 

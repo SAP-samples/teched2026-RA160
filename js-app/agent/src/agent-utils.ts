@@ -1,5 +1,5 @@
-import type { createAgent } from 'langchain';
 import type { AIMessage } from '@langchain/core/messages';
+import type { createAgent } from 'langchain';
 
 type ToolConfiguration = Pick<
   Parameters<typeof createAgent>[0],

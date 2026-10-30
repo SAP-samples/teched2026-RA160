@@ -47,9 +47,9 @@ The UI listens on `http://localhost:3142`. The mock S/4HANA OData services (fina
 
 Follow the exercises in order. Each exercise builds on the previous one.
 
-| Exercise | Topic |
-| --- | --- |
-| [Exercise 1 – Connecting to AI Core: Building a Chat Agent](ex1/README.md) | Connect a TypeScript app to SAP AI Core via `OrchestrationClient`; first LLM round-trip |
+| Exercise                                                                           | Topic                                                                                                |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [Exercise 1 – Connecting to AI Core: Building a Chat Agent](ex1/README.md)         | Connect a TypeScript app to SAP AI Core via `OrchestrationClient`; first LLM round-trip              |
 | [Exercise 2 – Equipping the Agent: Tool Calls and the Agentic Loop](ex2/README.md) | Add OData and SQL tools; agent queries the mock S/4HANA data and aggregates it in a scratch database |
-| [Exercise 3 – Forecasting with SAP RPT and TabPFN](ex3/README.md) | Register forecasting and ground-truth tools; agent predicts future periods and evaluates actuals |
-| [Exercise 4 – Resilience with Fallback Configs](ex4/README.md) | Use the orchestration service's fallback config to recover automatically from model-level failures |
+| [Exercise 3 – Forecasting with SAP RPT and TabPFN](ex3/README.md)                  | Register forecasting and ground-truth tools; agent predicts future periods and evaluates actuals     |
+| [Exercise 4 – Resilience with Fallback Configs](ex4/README.md)                     | Use the orchestration service's fallback config to recover automatically from model-level failures   |
