@@ -148,9 +148,10 @@ Place the dedicated, short-lived workshop service key in the ignored root `.env`
 pnpm workshop:encrypt
 ```
 
-Generate a strong random passphrase. The command validates `AICORE_SERVICE_KEY` and prompts twice for that passphrase; it only rejects empty or mismatched input because character count does not prove entropy. It creates `workshop/service-key.age`, the encrypted payload to commit to the repository. The passphrase is never persisted by the script; distribute it out of band.
+Use a strong random passphrase. The command validates `AICORE_SERVICE_KEY` and prompts twice for that passphrase.
+It creates `workshop/service-key.age`, the encrypted payload to commit to the repository. The passphrase is never persisted by the script; distribute it out of band. The command refuses to overwrite the payload. Use `pnpm workshop:encrypt --force` only when rotating the workshop credential, and revoke the service key immediately after the workshop.
 
-The command refuses to overwrite the payload. Use `pnpm workshop:encrypt --force` only when rotating the workshop credential, and revoke the service key immediately after the workshop.
+Prefer formatting it as a single line without quotes to avoid issues with the Java version on Windows, matching `.env.example`.
 
 ## Contributing
 
