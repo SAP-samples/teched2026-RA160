@@ -836,6 +836,9 @@ body,
   color: var(--red);
   font-size: 0.8rem;
   padding: 0.5rem 1.25rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   flex-shrink: 0;
 }
 
