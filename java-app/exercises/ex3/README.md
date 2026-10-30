@@ -31,20 +31,20 @@ The key insight is that RPT uses **in-context learning on tabular data**: you gi
 
 In enterprise financial management, organizations frequently set plans and budgets. However, what leadership and financial controllers ultimately care about is:
 
-> *"What will our **actual spend** really turn out to be when the upcoming fiscal year concludes?"*
+> _"What will our **actual spend** really turn out to be when the upcoming fiscal year concludes?"_
 
 To understand how the agent predicts this, let's look at the four values of **`planningCategory`** in SAP financial planning:
 
-| `planningCategory` | What it means | Role in Forecasting |
-| ------------------ | ------------- | ------------------- |
-| **`ACTUAL`** | Realized, historical financial figures recorded from finalized business transactions (what was *actually* spent or earned). | **Target to predict** for the future year (2026), and **context data** from past years (2022–2024). |
-| **`PLAN`** | Operational targets established by business units before the period begins. | **Feature signal** available for both past and future years. |
-| **`BUDGET`** | Formal spending limits approved by management that should not be exceeded. | **Feature signal** available for both past and future years. |
-| **`FORECAST`** | Rolling estimates updated periodically throughout the year reflecting current trends. | **Feature signal** available for both past and future years. |
+| `planningCategory` | What it means                                                                                                               | Role in Forecasting                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **`ACTUAL`**       | Realized, historical financial figures recorded from finalized business transactions (what was _actually_ spent or earned). | **Target to predict** for the future year (2026), and **context data** from past years (2022–2024). |
+| **`PLAN`**         | Operational targets established by business units before the period begins.                                                 | **Feature signal** available for both past and future years.                                        |
+| **`BUDGET`**       | Formal spending limits approved by management that should not be exceeded.                                                  | **Feature signal** available for both past and future years.                                        |
+| **`FORECAST`**     | Rolling estimates updated periodically throughout the year reflecting current trends.                                       | **Feature signal** available for both past and future years.                                        |
 
 The core goal in Exercise 3 is to **predict future `ACTUAL` values** (e.g. forecasting what cost center A1000 will actually spend across all 12 periods of fiscal year 2026).
 
-We already know the planned, budgeted, and forecasted amounts (`PLAN`, `BUDGET`, `FORECAST`) for 2026. What we *don't* know is what the actual spend (`ACTUAL`) will be.
+We already know the planned, budgeted, and forecasted amounts (`PLAN`, `BUDGET`, `FORECAST`) for 2026. What we _don't_ know is what the actual spend (`ACTUAL`) will be.
 The tabular models learn the relationship between planned/budgeted figures and real actuals from the 2022–2024 context rows, and use those learned patterns to predict the missing 2026 actuals.
 
 ### Key Concepts and Terminology
@@ -53,12 +53,12 @@ To help you navigate the exercise, here is a quick reference for the key terms u
 
 - **In-Context Tabular Learning:** Rather than updating model weights via traditional training, the model learns patterns on the fly directly from the rows in your request table.
 - **Context Rows vs. Prediction Rows:**
-  - *Context rows:* Historical rows where the target value (`ACTUAL` spend) is known.
-  - *Prediction rows:* Future rows where input features (`PLAN`, `BUDGET`, `FORECAST`) are known, but the target value is set to `null`. The model fills in these blanks.
+  - _Context rows:_ Historical rows where the target value (`ACTUAL` spend) is known.
+  - _Prediction rows:_ Future rows where input features (`PLAN`, `BUDGET`, `FORECAST`) are known, but the target value is set to `null`. The model fills in these blanks.
 - **Target Column vs. Feature Columns:**
-  - *Target column:* The specific column to predict (e.g., `amountInCompanyCodeCurrency` for `ACTUAL`).
-  - *Feature columns:* The attributes the model learns from (e.g., `costCenter`, `glAccount`, `ledger`, and amounts for `PLAN`, `BUDGET`, `FORECAST`).
-  - *Feature rows:* Rows that provide the input values the model can use to make a prediction. In this exercise, they contain attributes such as cost center, account, and the `PLAN`, `BUDGET`, and `FORECAST` amounts; feature rows may be historical context rows or future prediction rows.
+  - _Target column:_ The specific column to predict (e.g., `amountInCompanyCodeCurrency` for `ACTUAL`).
+  - _Feature columns:_ The attributes the model learns from (e.g., `costCenter`, `glAccount`, `ledger`, and amounts for `PLAN`, `BUDGET`, `FORECAST`).
+  - _Feature rows:_ Rows that provide the input values the model can use to make a prediction. In this exercise, they contain attributes such as cost center, account, and the `PLAN`, `BUDGET`, and `FORECAST` amounts; feature rows may be historical context rows or future prediction rows.
 - **Ground Truth:** Real, verified actual values from completed business operations. In real life, future ground truth is unknown until the year ends; in our mock environment, 2026 actuals exist so we can test how accurate our forecast was.
 - **MAPE (Mean Absolute Percentage Error):** A standard forecast evaluation metric measuring percentage error.
   Lower MAPE means higher accuracy (e.g., a MAPE of 5% means the predictions were off by 5% on average).
@@ -69,11 +69,11 @@ To help you navigate the exercise, here is a quick reference for the key terms u
 
 The three RPT tools in `AgentService` each serve a different scenario:
 
-| Field               | Tool class              | When to use |
-|---------------------|-------------------------|-------------|
-| `rptSinglePredictionTool`| `RptSinglePredictionTool` | **Single-table** mode: all data is already in one DuckDB table. Supply a `predictionWhere` SQL predicate to select the rows whose target should be predicted (e.g. future fiscal periods), and optionally a `contextWhere` for known-truth rows — if omitted, every row not matching `predictionWhere` becomes context. |
-| `rptPredictionTool` | `RptPredictionTool`     | **Dual-source** mode: actuals and planning rows are in **separate** DuckDB tables (e.g., `journal_entry_data` as context, `financial_planning_data` as prediction input). Only columns shared between both tables are sent to RPT; a `source` column (`actual` / `plan`) is added automatically so RPT can distinguish the two sets. |
-| `getGroundTruthTool`| `GetGroundTruthTool`    | After a prediction is written into an output table, compare it against real OData data. Fetches journal entries or planning ACTUAL rows, joins on the dimensions you specify, and writes a comparison table with `pct_of_actual`, `pct_below_actual`, `pct_above_actual`, MAPE, MAE, and RMSE columns. |
+| Field                     | Tool class                | When to use                                                                                                                                                                                                                                                                                                                          |
+| ------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `rptSinglePredictionTool` | `RptSinglePredictionTool` | **Single-table** mode: all data is already in one DuckDB table. Supply a `predictionWhere` SQL predicate to select the rows whose target should be predicted (e.g. future fiscal periods), and optionally a `contextWhere` for known-truth rows — if omitted, every row not matching `predictionWhere` becomes context.              |
+| `rptPredictionTool`       | `RptPredictionTool`       | **Dual-source** mode: actuals and planning rows are in **separate** DuckDB tables (e.g., `journal_entry_data` as context, `financial_planning_data` as prediction input). Only columns shared between both tables are sent to RPT; a `source` column (`actual` / `plan`) is added automatically so RPT can distinguish the two sets. |
+| `getGroundTruthTool`      | `GetGroundTruthTool`      | After a prediction is written into an output table, compare it against real OData data. Fetches journal entries or planning ACTUAL rows, joins on the dimensions you specify, and writes a comparison table with `pct_of_actual`, `pct_below_actual`, `pct_above_actual`, MAPE, MAE, and RMSE columns.                               |
 
 ## Step 2: Understand the typical RPT workflow
 
@@ -99,12 +99,12 @@ The agent drives the entire sequence autonomously — your only job is to build 
 Before implementing `callRpt`, it helps to understand the three-object model the SAP Cloud SDK for AI uses to build an RPT request.
 The pattern is intentionally similar to what you saw in Exercise 1 with the Orchestration client:
 
-| RPT SDK object | Orchestration equivalent | Purpose |
-|---|---|---|
-| `TargetColumnConfig` | `OrchestrationModuleConfig` | Tells RPT _what_ to predict: the column name, the placeholder sentinel, and whether it's regression or classification. |
-| `PredictionConfig` | `OrchestrationChatOptions` | Wraps the target column config and attaches optional settings (here: how many top feature-importance scores to return). |
-| `PredictRequestPayloadOneOf` | `Prompt` | Bundles the prediction config together with the actual row data and sends it to RPT. |
-| `RptClient.forModel(...).tableCompletion(request)` | `chatClient.prompt(p).call().content()` | Fires the request synchronously and returns the response. |
+| RPT SDK object                                     | Orchestration equivalent                | Purpose                                                                                                                 |
+| -------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `TargetColumnConfig`                               | `OrchestrationModuleConfig`             | Tells RPT _what_ to predict: the column name, the placeholder sentinel, and whether it's regression or classification.  |
+| `PredictionConfig`                                 | `OrchestrationChatOptions`              | Wraps the target column config and attaches optional settings (here: how many top feature-importance scores to return). |
+| `PredictRequestPayloadOneOf`                       | `Prompt`                                | Bundles the prediction config together with the actual row data and sends it to RPT.                                    |
+| `RptClient.forModel(...).tableCompletion(request)` | `chatClient.prompt(p).call().content()` | Fires the request synchronously and returns the response.                                                               |
 
 Open [agent/src/main/java/com/sap/teched/demo/tool/RptPredictionTool.java](../../agent/src/main/java/com/sap/teched/demo/tool/RptPredictionTool.java) and find the `callRpt` method.
 The solution code is commented out inside the `/* */` block — your task in Step 5 is to put it back in, one piece at a time.

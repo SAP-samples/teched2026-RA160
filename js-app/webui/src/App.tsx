@@ -459,7 +459,18 @@ export default function App() {
     if (!sessionPromiseRef.current) {
       sessionPromiseRef.current = (async () => {
         const res = await fetch('/api/session', { method: 'POST' });
-        if (!res.ok) throw new Error('Failed to create session');
+        if (!res.ok) {
+          const body: unknown = await res.json().catch(() => null);
+          const message =
+            body !== null &&
+            typeof body === 'object' &&
+            'error' in body &&
+            typeof body.error === 'string' &&
+            body.error.trim()
+              ? body.error
+              : `Could not start a session (HTTP ${res.status}). Check the server terminal for details.`;
+          throw new Error(message);
+        }
         const { sessionId } = (await res.json()) as { sessionId: string };
         sessionRef.current = sessionId;
         return sessionId;
@@ -477,7 +488,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    void ensureSession();
+    void ensureSession().catch((err: unknown) => {
+      setError(err instanceof Error ? err.message : String(err));
+    });
   }, [ensureSession]);
 
   const activeTurnHasResponse =
@@ -683,7 +696,7 @@ export default function App() {
           }
         }
       } catch (err) {
-        setError(String(err));
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         const completedAt = Date.now();
         setTurns((prev) =>
@@ -777,7 +790,9 @@ export default function App() {
       }
       await ensureSession();
     } catch (err) {
-      setError(`Failed to reset session: ${String(err)}`);
+      setError(
+        `Failed to reset session: ${err instanceof Error ? err.message : String(err)}`,
+      );
     } finally {
       setResetting(false);
     }

@@ -1,6 +1,6 @@
 # Exercise 2 - Equipping the Agent: Tool Calls and the Agentic Loop
 
-In this exercise, you will add tools to the agent so it can query real financial data, run SQL aggregations, and reason across multiple data sources.
+In this exercise, you will add tools to the agent so it can fetch financial workshop data, run SQL aggregations, and reason across multiple data sources.
 You'll learn how LangChain's `createAgent()` function, running on LangGraph's runtime, drives the back-and-forth between the LLM and your locally executed tools.
 
 Complete [Exercise 1](../ex1/README.md) before starting this exercise.
@@ -9,6 +9,14 @@ Complete [Exercise 1](../ex1/README.md) before starting this exercise.
 
 By the end of this exercise, your agent will be able to fetch financial planning and journal entry data from SAP OData services, load it into an in-memory SQL workspace, and answer questions that require SQL aggregation — all driven autonomously by the LLM through tool calls.
 You'll understand how LangGraph routes tool-call messages to your functions and why the agentic loop requires no manual orchestration code in your application.
+
+### Where does the financial data come from?
+
+The workshop uses a **local OData server embedded in the application**, backed by the sample dataset in [`mock-server/data/seed.sql`](../../../mock-server/data/seed.sql). It provides financial planning and journal entry endpoints modeled after SAP S/4HANA APIs; it is **not a connection to a real SAP S/4HANA system or SAP HANA database**.
+
+The client side uses the usual **SAP Cloud SDK generated OData clients**. These clients send actual HTTP requests to the local server, which processes OData filters and returns data that the tools load into the session's in-memory DuckDB workspace. The dataset and backend are simulated, but the OData requests and data retrieval are real — not hard-coded tool responses.
+
+You can inspect the financial planning service at [http://localhost:3142/sap/opu/odata/sap/API_FINPLANNINGENTRYITEM_SRV/](http://localhost:3142/sap/opu/odata/sap/API_FINPLANNINGENTRYITEM_SRV/) while the application is running.
 
 ## Background: How tool calling works
 
@@ -44,11 +52,11 @@ Orchestration can apply content filtering to the LLM's input and output when you
 
 Open the following files and read the `tool(...)` definitions at the bottom of each:
 
-| File                                                     | Tool name                  | What it does                                                                                                                                  |
-| -------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`odata-tools.ts:104`](../../agent/src/tools/odata-tools.ts#L104) | `query_financial_planning` | Fetches financial planning entries from the OData API and **appends** them into a named session table. |
-| [`odata-tools.ts:174`](../../agent/src/tools/odata-tools.ts#L174) | `query_journal_entry` | Fetches journal entry items from the OData API and **appends** them into a named session table. |
-| [`sql-tool.ts:7`](../../agent/src/tools/sql-tool.ts#L7) | `run_sql` | Executes SQL against the session's in-memory workspace — `SELECT` for reporting, `CREATE OR REPLACE VIEW` to define virtual tables, and more. |
+| File                                                              | Tool name                  | What it does                                                                                                                                  |
+| ----------------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`odata-tools.ts:104`](../../agent/src/tools/odata-tools.ts#L104) | `query_financial_planning` | Fetches financial planning entries from the OData API and **appends** them into a named session table.                                        |
+| [`odata-tools.ts:174`](../../agent/src/tools/odata-tools.ts#L174) | `query_journal_entry`      | Fetches journal entry items from the OData API and **appends** them into a named session table.                                               |
+| [`sql-tool.ts:7`](../../agent/src/tools/sql-tool.ts#L7)           | `run_sql`                  | Executes SQL against the session's in-memory workspace — `SELECT` for reporting, `CREATE OR REPLACE VIEW` to define virtual tables, and more. |
 
 You will register these three data tools in this exercise.
 Exercise 3 adds RPT, TabPFN, and ground-truth tools after the SQL workflow is established.
@@ -58,7 +66,7 @@ Exercise 3 adds RPT, TabPFN, and ground-truth tools after the SQL workflow is es
 When the `query_financial_planning` tool queries financial planning data, entries are partitioned by the **`planningCategory`** property.
 In SAP financial planning, four distinct categories represent different perspectives on the same financial dimensions:
 
-- **`ACTUAL`**: Realized, historical financial amounts recorded from executed business transactions (what was *actually* spent or earned).
+- **`ACTUAL`**: Realized, historical financial amounts recorded from executed business transactions (what was _actually_ spent or earned).
 - **`PLAN`**: Operational planning figures established by business units as targets for future periods.
 - **`BUDGET`**: Approved financial limits / spending allocations authorized by management.
 - **`FORECAST`**: Rolling estimates updated periodically throughout the fiscal year reflecting recent trends.
@@ -80,6 +88,8 @@ The `description` string and the Zod `schema` together form the function definit
 Go back to the `buildFinancialAgent()` function in `agent.ts`.
 Replace the empty `tools` array with the three data tools:
 
+<!-- biome-ignore format: Keep one tool per line so exercise updates only add list entries. -->
+
 ```typescript
 const tools = [
   queryFinancialPlanningTool,
@@ -88,12 +98,20 @@ const tools = [
 ];
 ```
 
-Each tool in the array is passed to the `createAgent()` function, which registers its name, description, and schema with the model automatically.
+The array only registers tools if the `createAgent()` call receives **`tools,`**, as wired in
+Exercise 1. `systemPromptForTools(tools)` describes the tools; it does not register them.
+If the call still contains `tools: []` or omits any advertised tools, the startup wrapper
+stops with an `Agent configuration error` naming the missing tools. Pass the same `tools`
+array to both functions.
+
+LangChain registers each tool's name, description, and schema with the model automatically.
 When the model issues a tool-call message naming one of these tools, LangGraph routes it to the corresponding function in your application.
 
 ## Step 3: Verify the full `buildFinancialAgent()` function
 
 After Step 2, the relevant parts of the `buildFinancialAgent()` function should look like this:
+
+<!-- biome-ignore format: Keep one tool per line so exercise updates only add list entries. -->
 
 ```typescript
 function buildFinancialAgent() {
@@ -102,7 +120,9 @@ function buildFinancialAgent() {
       promptTemplating: {
         model: {
           name: 'anthropic--claude-4.6-sonnet',
-          params: { reasoning_effort: 'low' },
+          params: {
+            reasoning_effort: 'low',
+          },
         },
       },
     },

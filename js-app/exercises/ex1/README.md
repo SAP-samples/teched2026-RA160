@@ -73,7 +73,9 @@ const orchestrationClient = new OrchestrationClient([
     promptTemplating: {
       model: {
         name: 'anthropic--claude-4.6-sonnet',
-        params: { reasoning_effort: 'low' },
+        params: {
+          reasoning_effort: 'low',
+        },
       },
     },
   },
@@ -83,10 +85,16 @@ const orchestrationClient = new OrchestrationClient([
 The config object's `promptTemplating.model.name` field is the model identifier used by SAP AI Core's Generative AI Hub.
 The SDK reads credentials, resource group, and deployment details automatically from the environment — no secrets appear in your code.
 
+> [!IMPORTANT]
+> Creating `orchestrationClient` is only the first half of the setup. The agent still uses its
+> placeholder configuration until you pass the client **and the other configured values** to
+> `createAgent()` in Step 3. Do not stop after uncommenting the client.
+
 ## Step 3: Wire up `createAgent()`
 
-Find the `createAgent()` function call in `buildFinancialAgent()`.
-It currently has four placeholder values. Replace each placeholder with the variable computed above it:
+Find the `return createAgent({ ... })` call in `buildFinancialAgent()` — **this is where the
+configuration becomes the running agent**. Variables declared above the call are not picked
+up automatically. Replace all four placeholder values:
 
 - Set `model` to `orchestrationClient`, the `OrchestrationClient` instance you created in Step 2.
   This assigns the configured model client to the agent's `model` parameter.
@@ -94,7 +102,15 @@ It currently has four placeholder values. Replace each placeholder with the vari
 - Replace `tools: []` with `tools`, so the tools you register in Exercise 2 reach the agent.
 - Replace `middleware: []` with `middleware`, which enables orchestration prompt caching.
 
-The `tools` array itself stays empty for now — you will populate it in Exercise 2.
+Leave `checkpointer` unchanged. The `const tools: never[] = []` declaration stays empty for
+now — you will populate it in Exercise 2 — but the call must already use **`tools,` rather than
+`tools: []`**. Otherwise later exercises can advertise tools in the system prompt without
+actually registering them on the agent.
+
+The startup wrapper checks the prompt's available-tool list against the tools passed to
+`createAgent()`. If any advertised tools are missing, startup fails with an
+`Agent configuration error` naming them and explaining which wiring to fix. An empty tools
+array is valid in Exercise 1 because its introductory prompt advertises no available tools.
 
 Your complete `buildFinancialAgent()` function should look like this:
 
@@ -105,7 +121,9 @@ function buildFinancialAgent() {
       promptTemplating: {
         model: {
           name: 'anthropic--claude-4.6-sonnet',
-          params: { reasoning_effort: 'low' },
+          params: {
+            reasoning_effort: 'low',
+          },
         },
       },
     },
@@ -143,9 +161,14 @@ You should see the agent respond.
 At this point the agent has no tools, so it can only answer from its built-in knowledge and the system prompt.
 It cannot query any real data source yet — that comes in Exercise 2.
 
-> [!NOTE]
-> If the reply is exactly "This could be a chat client response.", the agent is still running its placeholder model.
-> Check that `createAgent()` receives the `OrchestrationClient` instance from Step 2 and that the development server reloaded.
+> [!IMPORTANT]
+> **Only getting "This could be a chat client response."?** This is the workshop's fixed
+> placeholder response, not an answer from SAP AI Core. Uncommenting the client alone is not enough:
+>
+> 1. Create the `OrchestrationClient` as shown in [Step 2](#step-2-create-an-orchestrationclient).
+> 2. Complete [Step 3](#step-3-wire-up-createagent): replace **all four** placeholders in
+>    `createAgent()` with `orchestrationClient`, `systemPrompt`, `tools`, and `middleware`.
+> 3. Save `agent.ts`, wait for the development server to reload, and ask again.
 
 ![The financial agent UI answering from the model without calling any tools](img/ex1-response.png)
 
@@ -171,7 +194,13 @@ Try `gemini-3.8-flash`:
 
 ```typescript
 const orchestrationClient = new OrchestrationClient([
-  { promptTemplating: { model: { name: 'gemini-3.8-flash' } } },
+  {
+    promptTemplating: {
+      model: {
+        name: 'gemini-3.8-flash',
+      },
+    },
+  },
 ]);
 ```
 

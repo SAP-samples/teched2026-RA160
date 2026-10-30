@@ -37,7 +37,11 @@ Replace the first model config with one that references a model name that does n
 
 ```typescript
 const orchestrationClient = new OrchestrationClient({
-  promptTemplating: { model: { name: 'broken-model-name' } },
+  promptTemplating: {
+    model: {
+      name: 'broken-model-name',
+    },
+  },
 });
 ```
 
@@ -58,8 +62,23 @@ Now restore a working config as the second entry in the array:
 
 ```typescript
 const orchestrationClient = new OrchestrationClient([
-  { promptTemplating: { model: { name: 'broken-model-name' } } },
-  { promptTemplating: { model: { name: 'anthropic--claude-4.6-sonnet', params: { reasoning_effort: 'low' } } } },
+  {
+    promptTemplating: {
+      model: {
+        name: 'broken-model-name',
+      },
+    },
+  },
+  {
+    promptTemplating: {
+      model: {
+        name: 'anthropic--claude-4.6-sonnet',
+        params: {
+          reasoning_effort: 'low',
+        },
+      },
+    },
+  },
 ]);
 ```
 
@@ -103,11 +122,19 @@ const orchestrationClient = new OrchestrationClient([
     promptTemplating: {
       model: {
         name: 'anthropic--claude-4.6-sonnet',
-        params: { reasoning_effort: 'low' },
+        params: {
+          reasoning_effort: 'low',
+        },
       },
     },
   },
-  { promptTemplating: { model: { name: 'gemini-3.8-flash' } } },
+  {
+    promptTemplating: {
+      model: {
+        name: 'gemini-3.8-flash',
+      },
+    },
+  },
 ]);
 ```
 

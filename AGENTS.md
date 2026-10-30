@@ -8,26 +8,26 @@ Implementations are provided in both TypeScript (LangChain + SAP Cloud SDK for A
 
 ## Key source locations
 
-| Path | Purpose |
-| --- | --- |
-| `js-app/agent/src/agent.ts` | Model config, system prompt, tool registration |
-| `js-app/agent/src/tools/` | OData, SQL, RPT, TabPFN, and ground-truth tools |
-| `mock-server/src/shared/db.ts` | In-memory SQLite mock OData backend |
-| `mock-server/data/seed.sql` | Static seed data (do not edit by hand) |
-| `java-app/agent/src/main/java/` | Java Spring Boot agent |
-| `js-app/exercises/` | JavaScript exercise guides (ex1–ex4) |
-| `java-app/exercises/` | Java exercise guides (ex1–ex4) |
+| Path                            | Purpose                                         |
+| ------------------------------- | ----------------------------------------------- |
+| `js-app/agent/src/agent.ts`     | Model config, system prompt, tool registration  |
+| `js-app/agent/src/tools/`       | OData, SQL, RPT, TabPFN, and ground-truth tools |
+| `mock-server/src/shared/db.ts`  | In-memory SQLite mock OData backend             |
+| `mock-server/data/seed.sql`     | Static seed data (do not edit by hand)          |
+| `java-app/agent/src/main/java/` | Java Spring Boot agent                          |
+| `js-app/exercises/`             | JavaScript exercise guides (ex1–ex4)            |
+| `java-app/exercises/`           | Java exercise guides (ex1–ex4)                  |
 
 ## JavaScript exercises
 
 Four progressive exercises under `js-app/exercises/`, each with a `README.md`:
 
-| Exercise | Topic |
-| --- | --- |
-| `ex1` | Connect a TypeScript app to SAP AI Core via `OrchestrationClient`; first LLM round-trip |
-| `ex2` | Add OData and SQL tools; agent queries real financial data and aggregates with an in-memory DB |
-| `ex3` | Add RPT and TabPFN forecasting tools; agent predicts future periods and evaluates actuals |
-| `ex4` | Orchestration fallback configs; agent recovers automatically from model-level failures |
+| Exercise | Topic                                                                                          |
+| -------- | ---------------------------------------------------------------------------------------------- |
+| `ex1`    | Connect a TypeScript app to SAP AI Core via `OrchestrationClient`; first LLM round-trip        |
+| `ex2`    | Add OData and SQL tools; agent queries real financial data and aggregates with an in-memory DB |
+| `ex3`    | Add RPT and TabPFN forecasting tools; agent predicts future periods and evaluates actuals      |
+| `ex4`    | Orchestration fallback configs; agent recovers automatically from model-level failures         |
 
 Each exercise README describes what the participant implements and what the finished state looks like.
 

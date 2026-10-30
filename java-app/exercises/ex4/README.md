@@ -39,7 +39,7 @@ This is useful for several real-world scenarios:
 
 Open `AgentService.java` and find `callChatClient` (the method we populated in Exercises 1 and 2).
 
-First, create a config that references a model name that does not exist. 
+First, create a config that references a model name that does not exist.
 The best place to do this is the beginning of the `callChatClient` method.
 
 ```java

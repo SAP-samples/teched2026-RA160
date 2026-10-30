@@ -63,10 +63,17 @@ if (isDev) {
         const listener = await getListener();
         listener(req, res);
       } catch (err) {
-        vite.ssrFixStacktrace(err as Error);
         console.error('[Hono SSR Error]', err);
         res.statusCode = 500;
-        res.end((err as Error).stack ?? String(err));
+        res.setHeader('Content-Type', 'application/json');
+        res.end(
+          JSON.stringify({
+            error:
+              err instanceof Error
+                ? err.message
+                : 'Could not load the agent. Check the server terminal for details.',
+          }),
+        );
       }
     } else {
       vite.middlewares(req, res);

@@ -51,13 +51,13 @@ The orchestration service validates and proxies each tool call, so no tool resul
 Open [agent/src/main/java/com/sap/teched/demo/agent/AgentService.java](../../agent/src/main/java/com/sap/teched/demo/agent/AgentService.java) and read the field declarations at the top of the class.
 In this exercise we will wire up the following tools:
 
-| Field                     | Tool class                | What it does |
-|---------------------------|---------------------------|--------------|
-| `financialPlanningTool`   | `FinancialPlanningTool`   | Queries the Financial Planning OData service and **appends** rows into the `financial_planning_data` DuckDB table. |
-| `journalEntryTool`        | `JournalEntryTool`        | Queries the Journal Entry OData service and **appends** rows into the `journal_entry_data` DuckDB table. |
-| `localDbTool`             | `LocalDbTool`             | Runs arbitrary SQL against the in-memory DuckDB workspace (SELECT, GROUP BY, joins, window functions…). |
-| `rptPredictionTool`       | `RptPredictionTool`       | Runs an SAP RPT forecast using two separate DuckDB tables (actuals as context, planning rows to predict). |
-| `getGroundTruthTool`      | `GetGroundTruthTool`      | Fetches real OData data and computes accuracy metrics against a prior RPT prediction table. |
+| Field                     | Tool class                | What it does                                                                                                           |
+| ------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `financialPlanningTool`   | `FinancialPlanningTool`   | Queries the Financial Planning OData service and **appends** rows into the `financial_planning_data` DuckDB table.     |
+| `journalEntryTool`        | `JournalEntryTool`        | Queries the Journal Entry OData service and **appends** rows into the `journal_entry_data` DuckDB table.               |
+| `localDbTool`             | `LocalDbTool`             | Runs arbitrary SQL against the in-memory DuckDB workspace (SELECT, GROUP BY, joins, window functions…).                |
+| `rptPredictionTool`       | `RptPredictionTool`       | Runs an SAP RPT forecast using two separate DuckDB tables (actuals as context, planning rows to predict).              |
+| `getGroundTruthTool`      | `GetGroundTruthTool`      | Fetches real OData data and computes accuracy metrics against a prior RPT prediction table.                            |
 | `rptSinglePredictionTool` | `RptSinglePredictionTool` | Runs an SAP RPT forecast using a single DuckDB table, splitting it into context and prediction rows by SQL predicates. |
 
 We will explain the three RPT tools in depth in Exercise 3 — for now just register them so they are available.
@@ -174,12 +174,12 @@ Try the following prompts to explore the agent's tool-calling behaviour using it
 
 - **Multi-step aggregation:**
   > "Compare actual journal entry spend vs. planning ACTUAL for cost center A1000 in 2023."
-  
+
   The agent needs to load both OData tables and join them in DuckDB.
 
 - **Cross-year comparison:**
   > "How did total planned spend for cost center A1000 change between 2022 and 2024?"
-  
+
   The agent should load multiple years of planning data and aggregate with `GROUP BY ledgerFiscalYear`.
 
 In each case, watch the trace panel to the left to see exactly which tools are called and with what arguments.

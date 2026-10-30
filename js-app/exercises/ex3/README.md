@@ -5,6 +5,8 @@ With these tools, your agent can predict future financial values and evaluate it
 
 Complete [Exercise 2](../ex2/README.md) before starting this exercise.
 
+> **Data source:** Financial planning and journal entry data come from the workshop's local OData server, embedded in the application and backed by a sample dataset — not a real SAP S/4HANA system or SAP HANA database. The tools use standard SAP Cloud SDK generated OData clients to fetch that data over HTTP and load it into the session's DuckDB workspace. See [Exercise 2: Where does the financial data come from?](../ex2/README.md#where-does-the-financial-data-come-from) for details.
+
 ## What you'll learn
 
 By the end of this exercise, your agent will be able to run a complete forecast workflow:
@@ -25,26 +27,34 @@ If you have any trouble, the full tool implementations are available in [`agent/
 SAP RPT (Relational Pretrained Transformer) is a **table-native foundation model** built specifically for structured, relational enterprise data — such as cost centers, general ledger accounts, purchase orders, and invoices.
 
 Unlike a general-purpose LLM that operates on unstructured text, RPT accepts a **table of rows** with numeric and categorical columns and predicts the values for a designated target column.
+
+RPT uses **tabular in-context learning**: examples with known target values provide context for predicting missing targets, without training a separate model. It supports both regression and classification.
 The SAP Cloud SDK for AI provides the `RptClient` class in `@sap-ai-sdk/rpt`, allowing you to invoke RPT directly from TypeScript without any custom model training, hyperparameter tuning, or infrastructure deployment.
+
+#### Context and deep-context mode
+
+**In this workshop**, `run_rpt_prediction` uses `sap-rpt-1.6`, with limits of **2,048 context rows**, **100 columns**, and **512 prediction rows** per request. Sample historical context only, split larger prediction sets across requests, and keep future actuals out of the context. See SAP's [RPT inferencing best practices](https://help.sap.com/docs/sap-ai-core/generative-ai/example-payloads-for-inferencing-sap-rpt-1?locale=en-US#best-practices) for data-preparation guidance.
+
+The larger `sap-rpt-1.6-large` variant supports more context and an optional **deep-context mode**, at higher computational effort. The workshop tool does not expose this mode. See the [SAP RPT 1.6 documentation](https://help.sap.com/docs/sap-ai-core/generative-ai/sap-rpt-1-6?locale=en-US) for model limits and deep-context details, and the [SDK documentation](https://sap.github.io/ai-sdk/docs/js/tabular-ai/rpt#context-mode) for a configuration example.
 
 ### The Financial Goal: Predicting Future ACTUAL Values
 
 In enterprise financial management, organizations frequently set plans and budgets. However, what leadership and financial controllers ultimately care about is:
 
-> *"What will our **actual spend** really turn out to be when the upcoming fiscal year concludes?"*
+> _"What will our **actual spend** really turn out to be when the upcoming fiscal year concludes?"_
 
 To understand how the agent predicts this, let's look at the four values of **`planningCategory`** in SAP financial planning:
 
-| `planningCategory` | What it means | Role in Forecasting |
-| ------------------ | ------------- | ------------------- |
-| **`ACTUAL`** | Realized, historical financial figures recorded from finalized business transactions (what was *actually* spent or earned). | **Target to predict** for the future year (2026), and **context data** from past years (2022–2024). |
-| **`PLAN`** | Operational targets established by business units before the period begins. | **Feature signal** available for both past and future years. |
-| **`BUDGET`** | Formal spending limits approved by management that should not be exceeded. | **Feature signal** available for both past and future years. |
-| **`FORECAST`** | Rolling estimates updated periodically throughout the year reflecting current trends. | **Feature signal** available for both past and future years. |
+| `planningCategory` | What it means                                                                                                               | Role in Forecasting                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **`ACTUAL`**       | Realized, historical financial figures recorded from finalized business transactions (what was _actually_ spent or earned). | **Target to predict** for the future year (2026), and **context data** from past years (2022–2024). |
+| **`PLAN`**         | Operational targets established by business units before the period begins.                                                 | **Feature signal** available for both past and future years.                                        |
+| **`BUDGET`**       | Formal spending limits approved by management that should not be exceeded.                                                  | **Feature signal** available for both past and future years.                                        |
+| **`FORECAST`**     | Rolling estimates updated periodically throughout the year reflecting current trends.                                       | **Feature signal** available for both past and future years.                                        |
 
 The core goal in Exercise 3 is to **predict future `ACTUAL` values** (e.g. forecasting what cost center A1000 will actually spend across all 12 periods of fiscal year 2026).
 
-We already know the planned, budgeted, and forecasted amounts (`PLAN`, `BUDGET`, `FORECAST`) for 2026. What we *don't* know is what the actual spend (`ACTUAL`) will be.
+We already know the planned, budgeted, and forecasted amounts (`PLAN`, `BUDGET`, `FORECAST`) for 2026. What we _don't_ know is what the actual spend (`ACTUAL`) will be.
 The tabular models learn the relationship between planned/budgeted figures and real actuals from the 2022–2024 context rows, and use those learned patterns to predict the missing 2026 actuals.
 
 ### Key Concepts and Terminology
@@ -53,12 +63,12 @@ To help you navigate the exercise, here is a quick reference for the key terms u
 
 - **In-Context Tabular Learning:** Rather than updating model weights via traditional training, the model learns patterns on the fly directly from the rows in your request table.
 - **Context Rows vs. Prediction Rows:**
-  - *Context rows:* Historical rows where the target value (`ACTUAL` spend) is known.
-  - *Prediction rows:* Future rows where input features (`PLAN`, `BUDGET`, `FORECAST`) are known, but the target value is set to `null`. The model fills in these blanks.
+  - _Context rows:_ Historical rows where the target value (`ACTUAL` spend) is known.
+  - _Prediction rows:_ Future rows where input features (`PLAN`, `BUDGET`, `FORECAST`) are known, but the target value is set to `null`. The model fills in these blanks.
 - **Target Column vs. Feature Columns:**
-  - *Target column:* The specific column to predict (e.g., `amountInCompanyCodeCurrency` for `ACTUAL`).
-  - *Feature columns:* The attributes the model learns from (e.g., `costCenter`, `glAccount`, `ledger`, and amounts for `PLAN`, `BUDGET`, `FORECAST`).
-  - *Feature rows:* Rows that provide the input values the model can use to make a prediction. In this exercise, they contain attributes such as cost center, account, and the `PLAN`, `BUDGET`, and `FORECAST` amounts; feature rows may be historical context rows or future prediction rows.
+  - _Target column:_ The specific column to predict (e.g., `amountInCompanyCodeCurrency` for `ACTUAL`).
+  - _Feature columns:_ The attributes the model learns from (e.g., `costCenter`, `glAccount`, `ledger`, and amounts for `PLAN`, `BUDGET`, `FORECAST`).
+  - _Feature rows:_ Rows that provide the input values the model can use to make a prediction. In this exercise, they contain attributes such as cost center, account, and the `PLAN`, `BUDGET`, and `FORECAST` amounts; feature rows may be historical context rows or future prediction rows.
 - **Parquet Format:** A compact, high-performance binary columnar data format. The TypeScript SDK packages rows into a Parquet blob and transmits it to SAP RPT, avoiding the overhead of large JSON payloads. If you prefer to use JSON data in your own clients, the Cloud SDK for AI will transparently compress the payload with `gzip` before sending it to SAP RPT.
 - **Ground Truth:** Real, verified actual values from completed business operations. In real life, future ground truth is unknown until the year ends; in our mock environment, 2026 actuals exist so we can test how accurate our forecast was.
 - **MAPE (Mean Absolute Percentage Error):** A standard forecast evaluation metric measuring percentage error.
@@ -70,11 +80,11 @@ To help you navigate the exercise, here is a quick reference for the key terms u
 
 Open the following files and read the `tool(...)` definitions:
 
-| File | Tool name | What it does |
-| ---- | --------- | ------------ |
-| [`rpt-tool.ts:417`](../../agent/src/tools/rpt-tool.ts#L417) | `run_rpt_prediction` | Runs SAP RPT on a SQL table or view and writes predicted values into an output table. `predictionWhere` and `contextWhere` separate prediction rows from context rows. |
-| [`tabpfn-tool.ts:231`](../../agent/src/tools/tabpfn-tool.ts#L231) | `run_tabpfn_prediction` | Runs TabPFN on a SQL table or view and writes predictions into an output table. Especially well-suited for tabular data with categorical or mixed-type features. |
-| [`get-ground-truth-tool.ts:411`](../../agent/src/tools/get-ground-truth-tool.ts#L411) | `get_ground_truth` | Compares a completed prediction against real OData actuals. Computes per-row percentage deviations and summary metrics including MAPE. |
+| File                                                                                  | Tool name               | What it does                                                                                                                                                           |
+| ------------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpt-tool.ts:417`](../../agent/src/tools/rpt-tool.ts#L417)                           | `run_rpt_prediction`    | Runs SAP RPT on a SQL table or view and writes predicted values into an output table. `predictionWhere` and `contextWhere` separate prediction rows from context rows. |
+| [`tabpfn-tool.ts:231`](../../agent/src/tools/tabpfn-tool.ts#L231)                     | `run_tabpfn_prediction` | Runs TabPFN on a SQL table or view and writes predictions into an output table. Especially well-suited for tabular data with categorical or mixed-type features.       |
+| [`get-ground-truth-tool.ts:411`](../../agent/src/tools/get-ground-truth-tool.ts#L411) | `get_ground_truth`      | Compares a completed prediction against real OData actuals. Computes per-row percentage deviations and summary metrics including MAPE.                                 |
 
 ---
 
@@ -82,6 +92,8 @@ Open the following files and read the `tool(...)` definitions:
 
 Exercise 2 left the agent with the three data and SQL tools.
 Now append the forecasting and ground-truth tools to the existing `tools` array in the [`agent/src/agent.ts`](../../agent/src/agent.ts) file:
+
+<!-- biome-ignore format: Keep one tool per line so exercise updates only add list entries. -->
 
 ```typescript
 const tools = [
@@ -125,7 +137,8 @@ A complete forecast workflow follows this sequence:
 
 Open [`agent/src/tools/rpt-tool.ts:294`](../../agent/src/tools/rpt-tool.ts#L294) and locate the `callRpt()` function.
 
-Unlike row-by-row JSON APIs, the TypeScript SDK uses a **Parquet-based API**: it serializes the SQL view into a binary Parquet blob and transmits it to SAP RPT in a single request:
+This implementation uses **Parquet**, a compact columnar format that fits well with the tabular data already held in the in-memory SQL workspace.
+It can directly serialize the SQL view into a binary Parquet blob and sends it to SAP RPT in a single request. Parquet is not required: the Cloud SDK for AI also supports sending table data directly as JSON.
 
 ```typescript
 const rptClient = new RptClient({ modelName: RPT_MODEL });
@@ -162,9 +175,9 @@ Key aspects of this implementation:
 - The `explanations: { top_column_scores: 5 }` property requests feature-importance scores, identifying which columns had the strongest influence on the forecast.
 - The `resilience({ timeout: 600_000 })` function allows up to 10 minutes for the prediction HTTP request and provides circuit-breaker handling.
 
-### Try changing the prediction configuration
+### Understand the prediction configuration
 
-Before continuing, inspect the `run_rpt_prediction` schema and the `prediction_config` in `callRpt()`. The tool does not hard-code a business column: the agent supplies `targetColumn` and `taskType` for each request. For this exercise, use `amountInCompanyCodeCurrency` as the target and `regression` because the target is a continuous monetary amount. Notice how the implementation passes that choice to RPT as the target column and prediction task.
+This step is for reading only; no code changes are needed. The agent supplies the target column and task type for each prediction request. The implementation passes these values to RPT through `prediction_config`, allowing the same tool to handle different prediction targets and tasks.
 
 ---
 
@@ -237,7 +250,7 @@ In-Memory SQL View
 6. Insert predictions into DuckDB output table (predicted_<targetColumn>)
 ```
 
-This explains why the `run_sql` tool is called *after* the `run_rpt_prediction` tool: the predicted values do not exist in the database until RPT has completed and written them into the output table.
+This explains why the `run_sql` tool is called _after_ the `run_rpt_prediction` tool: the predicted values do not exist in the database until RPT has completed and written them into the output table.
 
 ---
 

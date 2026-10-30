@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { describe, it } from 'node:test';
 import { AIMessage } from '@langchain/core/messages';
-import { visibleReasoning } from '../src/reasoning-content.ts';
+import { visibleReasoning } from '../src/agent-utils.ts';
 
 describe('visible reasoning from orchestration messages', () => {
   it('displays only the text of signed reasoning blocks, separate from the answer', () => {
